@@ -1,0 +1,66 @@
+**Soal 1:**
+Jumlah total kasus Covid-19 aktif yang baru di setiap provinsi lalu diurutkan berdasarkan jumlah kasus yang paling besar
+Code SQL:
+SELECT Province, SUM(New_Active_Cases) AS Jumlah_Kasus_Aktif_Baru
+FROM `binar-challenge-1-415012.covid.indonesia`
+WHERE Province IS NOT NULL
+GROUP BY Province
+ORDER BY Jumlah_Kasus_Aktif_Baru DESC
+
+**Soal 2:**
+Mengambil 2 (dua) location iso code yang memiliki jumlah total kematian karena Covid-19 paling sedikit
+Code SQL:
+SELECT Location_ISO_Code, SUM(Total_Deaths) AS Total_Kematian
+FROM `binar-challenge-1-415012.covid.indonesia` 
+GROUP BY Location_ISO_Code
+ORDER BY Total_Kematian ASC
+LIMIT 2
+
+**Soal 3:**
+Data tentang tanggal - tanggal ketika rate kasus recovered di Indonesia paling tinggi beserta jumlah ratenya
+Code SQL:
+SELECT date, Case_Recovered_Rate
+FROM `binar-challenge-1-415012.covid.indonesia`
+WHERE Location = 'Indonesia'
+ORDER BY Case_Recovered_Rate DESC
+LIMIT 10
+
+**Soal 4:**
+Total case fatality rate dan case recovered rate dari masing-masing location iso code yang diurutkan dari data yang paling rendah
+Code SQL:
+WITH Fatality AS (
+  SELECT
+    Location_ISO_Code AS Fatality_Location_ISO_Code,
+    ROUND(SUM(Case_Fatality_Rate),2) AS Fatality_Rate,
+    ROW_NUMBER() OVER (ORDER BY SUM(Case_Fatality_Rate) ASC) AS order_number
+  FROM `binar-challenge-1-415012.covid.indonesia`
+  GROUP BY Location_ISO_Code
+  ORDER BY Fatality_Rate ASC
+),
+Recovered AS (
+  SELECT
+    Location_ISO_Code AS Recovered_Location_ISO_Code,
+    ROUND(SUM(Case_Recovered_Rate),2) AS Recovered_Rate,
+    ROW_NUMBER() OVER (ORDER BY SUM(Case_Recovered_Rate) ASC) AS order_number
+  FROM `binar-challenge-1-415012.covid.indonesia`
+  GROUP BY Location_ISO_Code
+  ORDER BY Recovered_Rate ASC
+)
+SELECT Fatality_Location_ISO_Code, Fatality_Rate, Recovered_Location_ISO_Code, Recovered_Rate
+FROM Fatality
+JOIN Recovered ON Fatality.order_number = Recovered.order_number
+
+**Soal 5:**
+Data tentang tanggal-tanggal saat total kasus Covid-19 mulai menyentuh angka 30.000-an
+Code SQL:
+SELECT date, Total_Cases
+FROM `binar-challenge-1-415012.covid.indonesia`
+WHERE Total_Cases BETWEEN 30000 AND 39999 AND Location = "Indonesia"
+ORDER BY date
+
+**Soal 6:**
+Jumlah data yang tercatat ketika kasus Covid-19 lebih dari atau sama dengan 30.000
+Code SQL:
+SELECT COUNT(*) AS jumlah_data
+FROM `binar-challenge-1-415012.covid.indonesia`
+WHERE Total_Cases >= 30000 AND Location = "Indonesia"
